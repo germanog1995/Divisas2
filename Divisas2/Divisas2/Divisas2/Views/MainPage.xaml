@@ -1,0 +1,78 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://xamarin.com/schemas/2014/forms"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:control="clr-namespace:Divisas2.Controls" 
+             xmlns:local="clr-namespace:Divisas2"
+             x:Class="Divisas2.MainPage"
+             Title="Divisas"
+             BindingContext="{Binding Main, Source={StaticResource Locator}}">
+    <ContentPage.Content>
+        <ScrollView>
+            <StackLayout 
+                Padding="8">
+                <Label 
+                    Text="Valor a convertir:">
+                </Label>
+                <Entry 
+                    Keyboard="Numeric" 
+                    Text="{Binding Amount}">
+                </Entry>
+                <Label 
+                    Text="Moneda origen:">
+                </Label>
+                <control:BindablePicker 
+                    Title="Seleccione moneda origen..." 
+                    DisplayMemberPath="Name" SelectedValuePath="Code" 
+                    ItemsSource="{Binding Rates}" 
+                    SelectedValue="{Binding Path=SourceRateCode, Mode=TwoWay}" 
+                    HorizontalOptions="FillAndExpand" 
+                    VerticalOptions="Center">
+                </control:BindablePicker>
+                <StackLayout
+                    Orientation="Horizontal">
+                    <Image
+                        HorizontalOptions="CenterAndExpand"
+                        Source="Change.png">
+                        <Image.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding ChangeCommand}"/>
+                        </Image.GestureRecognizers>
+                    </Image>
+                </StackLayout>
+                <Label 
+                    Text="Modena destino:">
+                </Label>
+                <control:BindablePicker 
+                    Title="Seleccione moneda destino..." 
+                    DisplayMemberPath="Name" 
+                    SelectedValuePath="Code" 
+                    ItemsSource="{Binding Rates}" 
+                    SelectedValue="{Binding Path=TargetRateCode, Mode=TwoWay}" 
+                    HorizontalOptions="FillAndExpand" 
+                    VerticalOptions="Center">
+                </control:BindablePicker>
+                <Button 
+                    Command="{Binding ConvertCommand}" 
+                    IsEnabled="{Binding IsEnabled}" 
+                    Text="Convertir" 
+                    BackgroundColor="Navy" 
+                    TextColor="White" 
+                    HeightRequest="40" 
+                    BorderRadius="20">
+                </Button>
+                <ActivityIndicator 
+                    IsRunning="{Binding IsRunning}">
+                </ActivityIndicator>
+                <Label 
+                    Text="{Binding Message}" 
+                    BackgroundColor="Silver" 
+                    TextColor="Purple" 
+                    FontAttributes="Bold" 
+                    HorizontalTextAlignment="Center" 
+                    VerticalTextAlignment="Center" 
+                    HorizontalOptions="FillAndExpand" 
+                    VerticalOptions="FillAndExpand">
+                </Label>
+            </StackLayout>
+        </ScrollView>
+    </ContentPage.Content>
+</ContentPage>
