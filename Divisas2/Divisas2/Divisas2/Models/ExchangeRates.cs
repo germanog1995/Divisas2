@@ -395,13 +395,6 @@ namespace Divisas2.Models
         public string Name { get; set; }
     }
 
-    public class Taxes
-    {
-        public string Code { get; set; }
-        public double TaxRate { get; set; }
-        public string Name { get; set; }
-    }
-
 
 
 }

@@ -1,4 +1,5 @@
 ﻿using Divisas2.Models;
+using Divisas2.Services;
 using GalaSoft.MvvmLight.Command;
 using Newtonsoft.Json;
 using System;
@@ -29,6 +30,10 @@ namespace Divisas2.ViewModels
         private bool isRunning;
 
         private bool isEnabled;
+
+        private DataService dataService;
+
+        private ApiService apiService;
 
         private string message;
 
@@ -67,9 +72,8 @@ namespace Divisas2.ViewModels
 
 
 
-        public ObservableCollection<TaxesRate> Rates { get; set; }
+        public ObservableCollection<Taxes> Rates { get; set; }
 
-        public ObservableCollection<Taxes> Taxes { get; set; }
 
         public ObservableCollection<TaxesName> RatesName { get; set; }
 
@@ -159,8 +163,10 @@ namespace Divisas2.ViewModels
 
         public MainViewModel()
         {
+            apiService = new ApiService();
+            dataService = new DataService();
             Message = "Ingrese la cantidad a convertir, la moneda orgien, la monda destino y presione el botón de 'Convertir'";
-            Rates = new ObservableCollection<TaxesRate>();
+            Rates = new ObservableCollection<Taxes>();
             RatesName = new ObservableCollection<TaxesName>();
             IsEnabled = false;
             GetRates();
@@ -195,29 +201,38 @@ namespace Divisas2.ViewModels
             Rates.Clear();
             type = typeof(Rates);
             properties = type.GetRuntimeFields();
+            var cont = 0;
 
             foreach (var property in properties)
             {
+                cont = cont + 1;
                 var code = property.Name.Substring(1, 3);
                 var name = code;
 
-                foreach(var property2 in lista)
+                foreach (var property2 in lista)
                 {
                     if (property2.Code == code)
                     {
-                        name =string.Format("({0}) {1}",code, property2.Name);
+                        name = string.Format("({0}) {1}", code, property2.Name);
                     }
                 }
 
                 var rate = (double)property.GetValue(exchangeRatesTaxes.Rates);
 
-                Rates.Add(new TaxesRate
+                Rates.Add(new Taxes
                 {
                     Code = code,
                     TaxRate = rate,
                     Name = name,
                 });
-               
+
+                dataService.InsertOrUpdate(new Taxes
+                {
+                    TaxesId = cont,
+                    Code = code,
+                    TaxRate = rate,
+                    Name = name,
+                });
             }
         }
 
@@ -225,6 +240,30 @@ namespace Divisas2.ViewModels
         {
             try
             {
+                var checkConnetion = await apiService.CheckConnection();
+                if (!checkConnetion.IsSuccess)
+                {
+                    IsRunning = true;
+                    IsEnabled = false;
+
+                    Rates.Clear();
+                    var rates = dataService.Get<Taxes>(true);
+                    foreach (var property in rates)
+                    {
+                        Rates.Add(new Taxes
+                        {
+                            Code = property.Code,
+                            TaxRate = property.TaxRate,
+                            Name = property.Name,
+                        });
+                    }
+
+                    IsRunning = false;
+                    IsEnabled = true;
+
+                    return;
+                }
+
                 IsRunning = true;
                 var client = new HttpClient();
                 client.BaseAddress = new Uri("https://openexchangerates.org");
