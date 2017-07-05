@@ -3,10 +3,12 @@ using Android.Content;
 using Android.Net;
 using Divisas2.Models;
 using Java.Net;
+using Newtonsoft.Json;
 using Plugin.Connectivity;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -61,3 +63,4 @@ namespace Divisas2.Services
         }
     }
 }
+

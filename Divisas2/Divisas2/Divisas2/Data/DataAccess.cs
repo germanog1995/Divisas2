@@ -21,6 +21,7 @@ namespace Divisas2.Data
                 System.IO.Path.Combine(config.DirectoryDB, "Divisas2.db3"));
 
             connection.CreateTable<Taxes>();
+            connection.CreateTable<RememberRates>();
         }
 
         public void Insert<T>(T model)

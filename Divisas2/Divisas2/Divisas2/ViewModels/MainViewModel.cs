@@ -170,6 +170,7 @@ namespace Divisas2.ViewModels
             RatesName = new ObservableCollection<TaxesName>();
             IsEnabled = false;
             GetRates();
+            
         }
 
         #endregion
@@ -201,6 +202,7 @@ namespace Divisas2.ViewModels
             Rates.Clear();
             type = typeof(Rates);
             properties = type.GetRuntimeFields();
+
             var cont = 0;
 
             foreach (var property in properties)
@@ -219,20 +221,27 @@ namespace Divisas2.ViewModels
 
                 var rate = (double)property.GetValue(exchangeRatesTaxes.Rates);
 
-                Rates.Add(new Taxes
-                {
-                    Code = code,
-                    TaxRate = rate,
-                    Name = name,
-                });
-
-                dataService.InsertOrUpdate(new Taxes
+                var taxe = new Taxes
                 {
                     TaxesId = cont,
                     Code = code,
                     TaxRate = rate,
                     Name = name,
-                });
+                };
+
+                Rates.Add(taxe);
+                dataService.InsertOrUpdate(taxe);
+            }
+        }
+
+        private void RememberRates()
+        {
+            var rememberRates = dataService.Find<RememberRates>(1,false);
+
+            if (rememberRates != null)
+            {
+                SourceRateCode = rememberRates.CodeRateSource;
+                TargetRateCode = rememberRates.CodeRateTarget;
             }
         }
 
@@ -263,7 +272,7 @@ namespace Divisas2.ViewModels
 
                     return;
                 }
-
+                
                 IsRunning = true;
                 var client = new HttpClient();
                 client.BaseAddress = new Uri("https://openexchangerates.org");
@@ -302,6 +311,7 @@ namespace Divisas2.ViewModels
             }
 
             LoadRates();
+            RememberRates();
             IsRunning = false;
             IsEnabled = true;
         }
@@ -347,7 +357,16 @@ namespace Divisas2.ViewModels
                 {
                     targetRate = property.TaxRate;
                 }
-            }                     
+            }
+
+            var rememberRate = new RememberRates
+            {
+                LastQueryId = 1,
+                CodeRateSource = sourceRateCode,
+                CodeRateTarget = targetRateCode,
+            };
+
+            dataService.DeleteAllAndInsert<RememberRates>(rememberRate);
 
             decimal amountConverted = amount / (decimal)sourceRate * (decimal)targetRate;
 
